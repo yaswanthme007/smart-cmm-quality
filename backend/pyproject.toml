@@ -1,0 +1,47 @@
+[project]
+name = "smart-cmm-quality-backend"
+version = "0.0.1"
+description = "Smart CMM Quality Alert and Action Tracking System: API and worker"
+license = "MIT"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.20.1",
+    "argon2-cffi>=25.1.0",
+    "email-validator>=2.3.0",
+    "fastapi>=0.162.0",
+    "numpy>=2.5.4",
+    "openpyxl>=3.1.5",
+    "psycopg[binary]>=3.3.8",
+    "pydantic-settings>=2.16.2",
+    "pyjwt>=2.15.1",
+    "python-multipart>=0.0.33",
+    "reportlab>=5.1.0",
+    "sqlalchemy>=2.1.8",
+    "uvicorn[standard]>=0.54.0",
+    "watchdog>=7.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "hypothesis>=6.170.14",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "DTZ"]
+ignore = ["B008"]  # FastAPI Depends() in default arguments
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
