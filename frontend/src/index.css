@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+/* Result colours (Section 15.2): always paired with a text label. */
+@theme {
+  --color-result-ok: #15803d;
+  --color-result-marginal: #b45309;
+  --color-result-nok: #b91c1c;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
