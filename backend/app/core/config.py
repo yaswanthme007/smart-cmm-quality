@@ -21,6 +21,8 @@ class Settings(BaseSettings):
 
     jwt_secret: str = Field(default="", repr=False)
     jwt_expire_hours: int = 12
+    # Set true behind HTTPS so the session cookie is only sent over TLS.
+    cookie_secure: bool = False
 
     web_origin: str = "http://localhost:5173"
     app_base_url: str = "http://localhost:5173"
