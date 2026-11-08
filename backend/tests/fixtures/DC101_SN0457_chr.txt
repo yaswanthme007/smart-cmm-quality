@@ -1,0 +1,6 @@
+planid	partnb	id	type	idsymbol	actual	nominal	uppertol	lowertol	deviation	exceed	comment
+DC-101_DEMO	0457	C-01	Diameter	C-01	48.011	48.000	0.025	0.000	0.011	0.000	Pinion bore Ø
+DC-101_DEMO	0457	C-02	Geometric	C-02	0.014	0.000	0.040	0.000	0.014	0.000	Flange face flatness
+DC-101_DEMO	0457	C-03	Diameter	C-03	72.034	72.000	0.030	0.000	0.034	0.004	Bearing bore Ø
+DC-101_DEMO	0457	C-04	Geometric	C-04	0.021	0.000	0.050	0.000	0.021	0.000	Bore position
+DC-101_DEMO	0457	C-05	Diameter	C-05	110.004	110.000	0.050	-0.050	0.004	0.000	PCD Ø
