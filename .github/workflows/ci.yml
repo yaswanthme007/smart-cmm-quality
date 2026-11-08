@@ -46,8 +46,8 @@ jobs:
         run: uv sync --frozen
       - name: Lint
         run: |
-          uv run ruff check .
-          uv run ruff format --check .
+          uv run ruff check . ../tools
+          uv run ruff format --check . ../tools
       - name: Test
         run: uv run pytest
 
@@ -101,6 +101,22 @@ jobs:
           done
           curl -sf http://localhost:5173/ | grep -q '<title>Smart CMM Quality</title>'
           curl -sf http://localhost:5173/api/health
+      - name: Demo storyline seed (make demo-reset)
+        run: make demo-reset
+      - name: Install Playwright
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: E2E closed loop in a real browser
+        working-directory: frontend
+        run: npx playwright test
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: frontend/test-results/
       - name: Production web image builds
         run: docker compose --profile prod build web-prod
       - name: Logs on failure
