@@ -17,8 +17,13 @@ export default defineConfig({
       '/api': { target: apiTarget, changeOrigin: false },
     },
   },
+  build: {
+    // ECharts makes the bundle large (accepted trade-off, Section 6 D10).
+    chunkSizeWarningLimit: 1600,
+  },
   test: {
     environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
     css: false,
   },
