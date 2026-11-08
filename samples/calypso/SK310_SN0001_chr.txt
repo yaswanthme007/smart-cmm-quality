@@ -1,0 +1,4 @@
+planid	partnb	id	type	idsymbol	actual	nominal	uppertol	lowertol	deviation	exceed	comment
+SK-310_DEMO	0001	C-01	Diameter	C-01	30.011	30.000	0.021	0.000	0.011	0.000	Kingpin bore Ø30
+SK-310_DEMO	0001	C-02	Dimension	C-02	142.061	142.000	0.150	-0.150	0.061	0.000	Arm length
+SK-310_DEMO	0001	C-03	Geometric	C-03	0.010	0.000	0.050	0.000	0.010	0.000	Mounting face flatness

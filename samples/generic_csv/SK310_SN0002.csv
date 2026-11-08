@@ -1,0 +1,4 @@
+﻿Dimension,Description,Nominal,+Tol,-Tol,Measured,Dev,Note
+C-01,Kingpin bore Ø30,30.000,0.021,0.000,30.006,0.006,SYNTHETIC DEMO DATA
+C-02,Arm length,142.000,0.150,-0.150,142.034,0.034,SYNTHETIC DEMO DATA
+C-03,Mounting face flatness,0.000,0.050,0.000,0.022,0.022,SYNTHETIC DEMO DATA

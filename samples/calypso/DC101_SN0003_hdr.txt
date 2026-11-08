@@ -1,0 +1,2 @@
+planid	partnb	date	time	operator	machine	comment
+DC-101_DEMO	0003	2026-11-08	05:53:55+0000	demo-inspector	VMC-02	SYNTHETIC DEMO DATA

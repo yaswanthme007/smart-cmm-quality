@@ -1,0 +1,4 @@
+planid	partnb	id	type	idsymbol	actual	nominal	uppertol	lowertol	deviation	exceed	comment
+BD-205_DEMO	0003	C-01	Diameter	C-01	254.011	254.000	0.080	-0.080	0.011	0.000	Braking surface Ø254
+BD-205_DEMO	0003	C-02	Geometric	C-02	0.022	0.000	0.060	0.000	0.022	0.000	Radial runout
+BD-205_DEMO	0003	C-03	Dimension	C-03	95.995	96.000	0.100	-0.100	-0.005	0.000	Overall height

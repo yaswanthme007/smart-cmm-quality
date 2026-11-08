@@ -1,0 +1,4 @@
+﻿Dimension,Description,Nominal,+Tol,-Tol,Measured,Dev,Note
+C-01,Braking surface Ø254,254.000,0.080,-0.080,254.011,0.011,SYNTHETIC DEMO DATA
+C-02,Radial runout,0.000,0.060,0.000,0.022,0.022,SYNTHETIC DEMO DATA
+C-03,Overall height,96.000,0.100,-0.100,95.995,-0.005,SYNTHETIC DEMO DATA
