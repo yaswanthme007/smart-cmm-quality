@@ -38,12 +38,15 @@ def configure_logging(level: str = "INFO") -> None:
     root = logging.getLogger()
     root.handlers[:] = [handler]
     root.setLevel(level.upper())
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
     """Accepts an incoming X-Request-ID or generates one, and echoes it on the response."""
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        # Upload start time: received_at for K3 alert generation time (Section 10.5).
+        request.state.received_at = datetime.now(UTC)
         request_id = request.headers.get(REQUEST_ID_HEADER) or uuid.uuid4().hex
         token = request_id_var.set(request_id)
         try:
