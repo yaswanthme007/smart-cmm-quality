@@ -9,7 +9,17 @@ interface Proposal {
   part_no: string | null
   serial_no: string | null
   machine_code: string | null
-  rows: { char_no: string; char_name: string | null; actual: string; nominal: string | null; usl: string | null; lsl: string | null }[]
+  provider?: string
+  model?: string
+  rows: {
+    char_no: string
+    char_name: string | null
+    actual: string
+    nominal: string | null
+    usl: string | null
+    lsl: string | null
+    found_in_pdf?: boolean
+  }[]
 }
 
 /** Human confirmation of AI-extracted PDF rows (Section 19). Nothing is classified before this. */
@@ -35,7 +45,10 @@ export function ConfirmRows({ report }: { report: ReportDetail }) {
   if (!pending) return null
   return (
     <Card title="AI-extracted rows: check each against the PDF, then confirm">
-      <p className="mb-3 text-xs text-slate-600">Suggested by the optional AI module. Only confirmed rows are classified; limits come from master data.</p>
+      <p className="mb-3 text-xs text-slate-600">
+        Suggested by the optional AI module{pending.data.model ? ` (${pending.data.provider ?? 'groq'} · ${pending.data.model})` : ''}. Only confirmed rows are classified; limits come
+        from master data. Rows marked red contain a number that was not found in the PDF text.
+      </p>
       <div className="mb-3 grid gap-3 md:grid-cols-3">
         {(['part_no', 'serial_no', 'machine_code'] as const).map((k) => (
           <Field key={k} label={k}>
@@ -54,14 +67,17 @@ export function ConfirmRows({ report }: { report: ReportDetail }) {
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} className="border-t border-slate-100">
+            <tr key={i} className={`border-t border-slate-100 ${r.found_in_pdf === false ? 'bg-red-50' : ''}`}>
               <td>
                 <input type="checkbox" checked={r.keep} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, keep: e.target.checked } : x)))} />
               </td>
               <td>
                 <input className={inputClass} value={r.char_no} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, char_no: e.target.value } : x)))} />
               </td>
-              <td className="text-slate-600">{r.char_name}</td>
+              <td className="text-slate-600">
+                {r.char_name}
+                {r.found_in_pdf === false && <span className="ml-2 text-xs font-semibold text-red-700">not found in PDF, check</span>}
+              </td>
               <td>
                 <input className={inputClass} value={r.actual} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, actual: e.target.value } : x)))} />
               </td>
