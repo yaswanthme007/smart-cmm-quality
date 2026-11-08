@@ -60,8 +60,9 @@ bench: ## Measure Section 17 targets against the running stack (writes docs/BENC
 
 GEN := cd backend && uv run python ../tools/generator/generate.py
 
-script-pdf: ## Render docs/DEMO_SCRIPT.md to docs/DEMO_SCRIPT.pdf
+script-pdf: ## Render the demo script and the Linux setup guide to PDF (docs/)
 	cd backend && uv run python ../tools/docs/md_to_pdf.py
+	cd backend && uv run python ../tools/docs/md_to_pdf.py ../docs/SETUP_LINUX.md ../docs/SETUP_LINUX.pdf --portrait
 
 gen: ## Generate synthetic CMM report files into samples/ (demo data)
 	$(GEN) --style csv --count 3 --out ../samples

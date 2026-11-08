@@ -1,6 +1,6 @@
 """Render a project Markdown doc (headings, paragraphs, bullets, tables, code) to PDF.
 
-Usage (repo root):  make script-pdf
+Usage (repo root):  make script-pdf   (also renders docs/SETUP_LINUX.md, portrait)
    or:  cd backend && uv run python ../tools/docs/md_to_pdf.py ../docs/DEMO_SCRIPT.md ../docs/DEMO_SCRIPT.pdf
 
 Uses DejaVu Sans when available so symbols like → ≈ ≥ Ø ⚠ render (the built-in PDF fonts lack them).
@@ -225,8 +225,12 @@ def build(md: str, width: float) -> list:
     return story
 
 
-def main(src: str, dst: str) -> None:
-    page = landscape(A4)
+def main(src: str, dst: str, portrait: bool = False) -> None:
+    md = Path(src).read_text(encoding="utf-8")
+    title = next(
+        (line[2:].strip() for line in md.splitlines() if line.startswith("# ")), "Document"
+    )
+    page = A4 if portrait else landscape(A4)
     margin = 14 * mm
     doc = SimpleDocTemplate(
         dst,
@@ -235,7 +239,7 @@ def main(src: str, dst: str) -> None:
         rightMargin=margin,
         topMargin=13 * mm,
         bottomMargin=13 * mm,
-        title="Smart CMM Quality: Round 2 demo script",
+        title=title,
         author="Team Xyrus",
     )
     width = page[0] - 2 * margin
@@ -265,4 +269,5 @@ if __name__ == "__main__":
     main(
         sys.argv[1] if len(sys.argv) > 1 else str(root / "docs" / "DEMO_SCRIPT.md"),
         sys.argv[2] if len(sys.argv) > 2 else str(root / "docs" / "DEMO_SCRIPT.pdf"),
+        portrait="--portrait" in sys.argv,
     )
