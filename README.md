@@ -72,7 +72,7 @@ Demo users (password = `DEMO_USER_PASSWORD` in `.env`): `inspector`, `owner.vmc0
   corrective-action practice — not certified against them.
 - Vendor file formats are implemented from public documentation, not vendor certification.
 - Demo escalation timers are shortened (60 s / 120 s instead of minutes).
-- AI is optional (`AI_ENABLED=false` by default) and never classifies, alerts or escalates.
+- AI is optional (`AI_ENABLED=false` by default, Groq for messy PDFs) and never classifies, alerts or escalates; a person confirms every AI-extracted row.
 - Assumptions not yet confirmed with the plant are listed in [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## Documentation

@@ -94,7 +94,7 @@ only hear about committed data (transactional outbox pattern, Section 6 D7).
 | `services/spc.py` | I-MR limits, Nelson rules, capability gate |
 | `services/kpi.py`, `exports.py` | K1–K6 and Excel/PDF |
 | `services/audit.py` | append-only audit writer |
-| `ai/` | optional, flag-gated: PDF extraction with confirmation, similar NCs, weekly summary |
+| `ai/` | optional, flag-gated: Groq PDF-text extraction with confirmation, similar NCs (local TF-IDF), weekly summary (template) |
 | `worker/` | `main` (async loops), `folder_watcher` |
 | `seed/` | demo masters, synthetic process model, 30-day history, storyline reset |
 
@@ -117,4 +117,4 @@ ncs, alerts, spc, audit, settings, masters, auth.
 
 Prototype: `docker compose up` on one laptop. Plant: the same Compose stack on a small on-prem
 server; each CMM PC exports to a shared folder mounted as `data/inbox/<CMM>`. No internet needed
-(the optional AI module is the only component that calls an external API, and it is off by default).
+(the optional AI module is the only component that calls an external API, Groq, and it is off by default).
