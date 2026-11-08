@@ -5,7 +5,7 @@ COMPOSE := docker compose
 CMMS := CMM-01 CMM-02
 
 .DEFAULT_GOAL := help
-.PHONY: help env dirs up down logs migrate seed demo-reset demo-drop test e2e lint fmt bench gen
+.PHONY: help env dirs up down logs migrate seed demo-reset demo-drop test e2e lint fmt bench gen script-pdf
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -59,6 +59,9 @@ bench: ## Measure Section 17 targets against the running stack (writes docs/BENC
 	cd backend && uv run python ../tools/bench/ingest_bench.py --uploads 30
 
 GEN := cd backend && uv run python ../tools/generator/generate.py
+
+script-pdf: ## Render docs/DEMO_SCRIPT.md to docs/DEMO_SCRIPT.pdf
+	cd backend && uv run python ../tools/docs/md_to_pdf.py
 
 gen: ## Generate synthetic CMM report files into samples/ (demo data)
 	$(GEN) --style csv --count 3 --out ../samples

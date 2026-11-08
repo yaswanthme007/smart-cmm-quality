@@ -9,6 +9,83 @@ we say "aligned with" ISA-18.2 / ISO 14253-1 / IATF 16949, never "compliant".
 
 ---
 
+## Part 0: Setting up on a fresh laptop (for whoever records)
+
+Everything runs in Docker; you do not need to install Python or PostgreSQL. Linux (Ubuntu) is
+the reference. On macOS use Docker Desktop; on Windows install WSL2 + Ubuntu and run every
+command below inside the Ubuntu terminal (Docker Desktop with WSL integration on).
+
+### 1. Accept the GitHub invite
+
+(email, or github.com/notifications) for
+`yaswanthme007/smart-cmm-quality`.
+
+### 2. Install the tools (once)
+
+| Tool | Why | Ubuntu command |
+|---|---|---|
+| Git | clone the repo | `sudo apt install -y git` |
+| Docker Engine + Compose plugin | runs db, api, worker, web, mailpit | follow docs.docker.com/engine/install/ubuntu, then `sudo usermod -aG docker $USER` and **log out and back in** |
+| make | runs the project commands | `sudo apt install -y make` |
+| uv | runs the demo file generator (`make demo-drop`); downloads Python 3.12 by itself | `curl -LsSf https://astral.sh/uv/install.sh \| sh` then open a new terminal |
+| Node 24 LTS (optional) | only for `make test` / `make e2e`; the app itself runs in Docker | nodejs.org or `nvm install 24` |
+| OBS Studio | screen recording | `sudo apt install -y obs-studio` |
+
+Check: `docker ps` works without sudo, `make --version`, `uv --version`.
+
+### 3. Get the code
+
+(the work is on the `dev` branch)
+
+```bash
+git clone https://github.com/yaswanthme007/smart-cmm-quality.git
+cd smart-cmm-quality
+git checkout dev
+```
+
+### 4. Create your `.env`
+
+(secrets are never in Git; each laptop has its own)
+
+```bash
+cp .env.example .env
+openssl rand -hex 32        # copy the output into JWT_SECRET
+```
+
+Edit `.env`: set `POSTGRES_PASSWORD` to anything and put the **same** password inside
+`DATABASE_URL`; paste the random value into `JWT_SECRET`; set `DEMO_USER_PASSWORD` to anything.
+Keep `DEMO_MODE=true` (one-click demo login) and `ESCALATION_PROFILE=demo` (60 s / 120 s timers).
+Leave `AI_ENABLED=false` unless you also want to show PDF extraction (then add a Groq key in
+`AI_API_KEY`).
+
+### 5. Start and seed
+
+```bash
+make up            # first time builds images: several minutes
+make demo-reset    # ≈20 s: demo masters, 30 days of synthetic history, drift on VMC-02
+```
+
+Check http://localhost:8000/api/health shows `"status":"ok"` (worker becomes `ok` within ~10 s)
+and http://localhost:5173 shows the login page with the demo-user buttons.
+
+### 6. Dry run once, then reset
+
+Open `http://localhost:5173/login?as=owner.vmc02`, run `make demo-drop`, watch the alert pop up,
+then `make demo-reset` so the recording starts clean (the live NC must be NC-2026-00042).
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `permission denied ... docker.sock` | you are not in the docker group yet: `sudo usermod -aG docker $USER`, log out and in |
+| A port is already in use (5432, 8000, 5173, 1025, 8025) | stop the other program, or for PostgreSQL set `DB_PORT=5433` in `.env` |
+| Web page shows a red Vite error after `git pull` | `make up` (rebuilds images with new dependencies) |
+| Alerts don't pop up | each role must be in its own browser profile / incognito window; check the green "live" dot next to "Demo data" |
+| Anything else odd before a take | `make demo-reset`, reload the windows |
+| Stop everything | `make down` |
+
+---
+
 ## Part 1: The real problems (say these in plant language)
 
 The CMM is the most accurate instrument in the plant, but its verdict travels slowly and then
@@ -17,13 +94,13 @@ usually run (Section 2.2 of the spec; to be validated with Sakthi):
 
 | # | Real problem on the shop floor | What it costs | Our answer | Shown at |
 |---|---|---|---|---|
-| P1 | **The Not OK reaches the machine late.** The inspector reads the result on the CMM screen or printout and tells production by phone, WhatsApp or by walking over. Meanwhile the machine keeps cutting. | Every minute of delay is more suspect parts: *bad parts ≈ machine output rate × detection delay*. Containment gets bigger and costlier. | The result file is read the moment the CMM writes it; the owner gets an in-app alert and an email in seconds, and we **measure that time for every Not OK**. | 1:40 |
-| P2 | **Nobody clearly owns it.** "Production" is told, not the person responsible for VMC-02 / OP-30 finish boring. Nobody confirms they saw it. | Alerts get lost between shifts; the same defect runs on. | Ownership rules (machine → process → part → department head) name one owner. If nobody acknowledges, it **escalates** to the supervisor, then the Quality Head. | 2:10 |
-| P3 | **The fix is not tracked.** Corrective actions live on paper or in a sheet: no evidence, no verification, closure time unknown. | Same root cause comes back; audits find gaps; nobody can say how long problems stay open. | A light 8D flow: acknowledge → containment → 6M root cause → action + target date → evidence → Quality Head verifies. Closure lead time is computed automatically. | 2:40 |
-| P4 | **Reports are built by hand.** At shift end someone copies CMM results into Excel to get OK / Not OK counts and trends. | Hours of clerical work; numbers arrive late and with copy errors; trends by machine stay hidden. | Every number on the dashboard comes from stored events, filterable by date, part, machine, process and shift; Excel export in one click. | 0:50 / 4:00 |
+| P1 | **The Not OK reaches the machine late.** The inspector reads the result on the CMM screen or printout and tells production by phone, WhatsApp or by walking over. Meanwhile the machine keeps cutting. | Every minute of delay is more suspect parts: *bad parts ≈ machine output rate × detection delay*. Containment gets bigger and costlier. | The result file is read the moment the CMM writes it; the owner gets an in-app alert and an email in seconds, and we **measure that time for every Not OK**. | 1:50 |
+| P2 | **Nobody clearly owns it.** "Production" is told, not the person responsible for VMC-02 / OP-30 finish boring. Nobody confirms they saw it. | Alerts get lost between shifts; the same defect runs on. | Ownership rules (machine → process → part → department head) name one owner. If nobody acknowledges, it **escalates** to the supervisor, then the Quality Head. | 2:30 |
+| P3 | **The fix is not tracked.** Corrective actions live on paper or in a sheet: no evidence, no verification, closure time unknown. | Same root cause comes back; audits find gaps; nobody can say how long problems stay open. | A light 8D flow: acknowledge → containment → 6M root cause → action + target date → evidence → Quality Head verifies. Closure lead time is computed automatically. | 3:05 |
+| P4 | **Reports are built by hand.** At shift end someone copies CMM results into Excel to get OK / Not OK counts and trends. | Hours of clerical work; numbers arrive late and with copy errors; trends by machine stay hidden. | Every number on the dashboard comes from stored events, filterable by date, part, machine, process and shift; Excel export in one click. | 0:50 / 4:05 |
 | P5 | **Every CMM speaks a different format.** ZEISS CALYPSO writes table files, PC-DMIS writes CSV/Excel, others write AQDEF; layouts differ even on the same brand. | Each new layout becomes an IT project, so integration never happens. | A canonical format + **mapping profiles**: a new layout is a configuration in the UI, not code. Drawing limits come from master data; if the report prints different limits we flag a **limit mismatch** (drawing revision risk). | 4:20 |
-| P6 | **We find failures, not drift.** Tool wear slowly pushes a bore toward its limit; every part passes until one suddenly fails. | Scrap and rework that a trend would have prevented. | SPC on every characteristic per machine: I-MR chart with frozen limits and Nelson rules. N3 (6 points steadily rising) **warns before the part fails**. | 1:00 |
-| P7 | **Too many or wrong alarms.** Probe errors, borderline readings and repeated failures flood people, so they stop reading. | Alarm fatigue: the real alarm is ignored. | Marginal results are shown but not pushed; one NC per part; repeats link to the open NC (recurrence) instead of new alarms; suspect values flagged "re-measure"; re-inspection OK lets the Quality Head cancel with a reason. Aligned with ISA-18.2 alarm principles. | 2:00 |
+| P6 | **We find failures, not drift.** Tool wear slowly pushes a bore toward its limit; every part passes until one suddenly fails. | Scrap and rework that a trend would have prevented. | SPC on every characteristic per machine: I-MR chart with frozen limits and Nelson rules. N3 (6 points steadily rising) **warns before the part fails**. | 1:15 |
+| P7 | **Too many or wrong alarms.** Probe errors, borderline readings and repeated failures flood people, so they stop reading. | Alarm fatigue: the real alarm is ignored. | Marginal results are shown but not pushed; one NC per part; repeats link to the open NC (recurrence) instead of new alarms; suspect values flagged "re-measure"; re-inspection OK lets the Quality Head cancel with a reason. Aligned with ISA-18.2 alarm principles. | 2:10 |
 
 One sentence for the judges: **"We don't replace the CMM software; we close the loop from a Not OK
 result to a verified fix, with a named owner and a measured time at every step."**
