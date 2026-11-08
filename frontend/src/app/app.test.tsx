@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -79,6 +79,26 @@ describe('app', () => {
     expect(await screen.findByRole('heading', { name: 'Quality dashboard' })).toBeInTheDocument()
     expect(screen.queryByText('Audit log')).not.toBeInTheDocument()
     expect(screen.queryByText('Settings')).not.toBeInTheDocument()
+  })
+
+  it('signs a demo user in with one click, without a password', async () => {
+    let loggedIn = false
+    mockApi((url) => {
+      if (url.includes('/auth/demo-login')) {
+        loggedIn = true
+        return [200, { ...QHEAD, role: 'PROCESS_OWNER', email: 'owner.vmc02@demo.local' }]
+      }
+      if (url.includes('/auth/me')) return loggedIn ? [200, { ...QHEAD, role: 'PROCESS_OWNER' }] : [401, {}]
+      if (url.includes('/auth/demo-users')) return [200, [{ email: 'owner.vmc02@demo.local', full_name: 'Owner', role: 'PROCESS_OWNER' }]]
+      if (url.includes('/kpi/summary')) return [200, SUMMARY]
+      if (url.includes('/alerts')) return [200, { total: 0, unread: 0, items: [] }]
+      return [200, []]
+    })
+    const router = renderAt('/login')
+    fireEvent.click(await screen.findByText('owner.vmc02@demo.local'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+    const call = vi.mocked(fetch).mock.calls.find(([u]) => String(u).includes('/auth/demo-login'))
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ email: 'owner.vmc02@demo.local' })
   })
 
   it('renders a not-found page for unknown routes', async () => {

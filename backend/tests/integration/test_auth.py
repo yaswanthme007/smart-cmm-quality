@@ -101,3 +101,27 @@ def test_demo_user_picker_lists_users_without_secrets(seeded, client):
     users = client.get("/api/auth/demo-users").json()
     assert len(users) == 7
     assert all(set(u) == {"email", "full_name", "role"} for u in users)
+
+
+def test_demo_login_one_click_only_in_demo_mode(seeded, client, monkeypatch):
+    from app.core import config
+
+    r = client.post("/api/auth/demo-login", json={"email": "owner.vmc02@demo.local"})
+    assert r.status_code == 200 and r.json()["role"] == "PROCESS_OWNER"
+    assert "httponly" in r.headers["set-cookie"].lower()
+    assert client.get("/api/auth/me").json()["email"] == "owner.vmc02@demo.local"
+    assert client.get("/api/audit").status_code == 403  # still a process owner, not more
+    assert (
+        client.post("/api/auth/demo-login", json={"email": "someone@plant.com"}).status_code == 403
+    )
+
+    monkeypatch.setenv("DEMO_MODE", "false")
+    config.get_settings.cache_clear()
+    try:
+        assert (
+            client.post("/api/auth/demo-login", json={"email": "qhead@demo.local"}).status_code
+            == 404
+        )
+    finally:
+        monkeypatch.delenv("DEMO_MODE")
+        config.get_settings.cache_clear()
