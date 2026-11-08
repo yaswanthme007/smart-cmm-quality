@@ -8,6 +8,7 @@ from app.core.logging import JsonFormatter, request_id_var
 def test_health_ok_when_db_reachable(client, monkeypatch):
     monkeypatch.setattr(health, "ping_db", lambda: None)
     monkeypatch.setattr(health, "check_smtp", lambda: "ok")
+    monkeypatch.setattr(health, "check_worker", lambda: "not_configured")
 
     response = client.get("/api/health")
 
@@ -25,6 +26,7 @@ def test_health_503_when_db_down(client, monkeypatch):
 
     monkeypatch.setattr(health, "ping_db", boom)
     monkeypatch.setattr(health, "check_smtp", lambda: "error")
+    monkeypatch.setattr(health, "check_worker", lambda: "error")
 
     response = client.get("/api/health")
 
@@ -35,6 +37,7 @@ def test_health_503_when_db_down(client, monkeypatch):
 
 def test_request_id_is_echoed_or_generated(client, monkeypatch):
     monkeypatch.setattr(health, "ping_db", lambda: None)
+    monkeypatch.setattr(health, "check_worker", lambda: "ok")
     monkeypatch.setattr(health, "check_smtp", lambda: "ok")
 
     echoed = client.get("/api/health", headers={"X-Request-ID": "abc123"})

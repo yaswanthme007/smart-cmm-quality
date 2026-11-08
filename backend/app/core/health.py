@@ -44,9 +44,25 @@ def check_smtp() -> CheckStatus:
     return "ok"
 
 
+HEARTBEAT_MAX_AGE_S = 30
+
+
 def check_worker() -> CheckStatus:
-    # The worker writes settings.worker_heartbeat every 10 s once it exists (C17).
-    return "not_configured"
+    """The worker writes settings.worker_heartbeat every 10 s; stale after 30 s."""
+    from datetime import UTC, datetime
+
+    from app.core.db import get_sessionmaker
+    from app.models import Setting
+
+    try:
+        with get_sessionmaker()() as session:
+            row = session.get(Setting, "worker_heartbeat")
+    except Exception:
+        return "error"
+    if row is None or not isinstance(row.value, dict):
+        return "not_configured"
+    at = datetime.fromisoformat(row.value["at"])
+    return "ok" if (datetime.now(UTC) - at).total_seconds() <= HEARTBEAT_MAX_AGE_S else "error"
 
 
 @router.get("/health", response_model=HealthResponse)
