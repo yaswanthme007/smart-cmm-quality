@@ -21,4 +21,4 @@ RUN useradd --create-home --uid 1000 app && mkdir -p /app/data && chown -R app /
 USER app
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-graceful-shutdown", "3"]
