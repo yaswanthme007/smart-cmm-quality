@@ -1,7 +1,7 @@
 # Smart CMM Quality: local / on-prem stack.
-# Dev:  make up   -> db, mailpit, api (8000), web (Vite dev, 5173)
-# Worker (folder watcher, escalation sweeper, outbox dispatcher) runs under the "worker" profile
-# until its code lands; production web build (Nginx, 8080) runs under the "prod" profile.
+# Dev:  make up   -> db, mailpit, api (8000), worker, web (Vite dev, 5173)
+# The worker runs the folder watcher, escalation sweeper and outbox dispatcher.
+# Production web build (Nginx, 8080) runs under the "prod" profile.
 
 name: smart-cmm-quality
 
@@ -49,6 +49,8 @@ services:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini:ro
       - ./data:/app/data
     depends_on:
       db:
@@ -57,7 +59,6 @@ services:
         condition: service_started
 
   worker:
-    profiles: ["worker"]
     build:
       context: ./backend
     restart: unless-stopped
@@ -70,6 +71,8 @@ services:
     command: ["python", "-m", "app.worker.main"]
     volumes:
       - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini:ro
       - ./data:/app/data
     depends_on:
       db:
